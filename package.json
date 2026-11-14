@@ -4,6 +4,7 @@
   "description": "Paste a clipboard screenshot, get HTML/CSS back at your cursor. macOS only for now.",
   "version": "0.1.0",
   "private": true,
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.90.0"
   },

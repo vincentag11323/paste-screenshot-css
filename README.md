@@ -1,44 +1,81 @@
 # Paste Screenshot as CSS
 
-Copy a screenshot to the macOS clipboard, run a command, get back HTML + CSS
-at your cursor. Uses your own Cent AI key, no backend, no account.
+![demo](requirements/demo/hero.gif)
 
-## Status
+Copy a screenshot to the clipboard. Press `Cmd+Shift+V`. Get back HTML + CSS
+(or Tailwind, or inline styles) at your cursor. Bring your own Cent AI key —
+no account, no backend, no subscription.
 
-Day 1-5 of the build plan (see `requirements/PRD.md` §8). macOS only.
+## What it does
 
-- Clipboard image read: real, tested against the actual macOS clipboard.
-- Vision call to Cent AI (Anthropic-Messages-shape, Claude-family model): real, tested against the live API, 5/5 real fixtures passing (`npm run qa`, see `requirements/PROMPT_REFINEMENT.md`).
-- Output-flavor picker (Tailwind classes / plain CSS / inline style) and a Retry action on failure.
-- Insert-at-cursor with indentation matching: real, verified in a real VS Code Extension Host via `@vscode/test-electron` (caught and fixed a real activation bug — see `TASKS.md`'s `FIX-01`). That test harness was then removed at the developer's request (it launches a visible VS Code window) — current verification is module-level only (`npm test`), see `TASKS.md`'s `E2E-05`.
-- Code review pass (security + comment hygiene): `requirements/CODE_REVIEW_V1.md`.
-- Not yet packaged (`vsce package`) or published — see `TASKS.md`'s Day 6-7 section.
+1. You copy a screenshot (Figma frame, a browser, a PDF mockup — anything)
+   to the macOS clipboard.
+2. You run **Paste Screenshot as CSS** (`Cmd+Shift+V`) in any open file.
+3. The extension reads the image straight off the clipboard, sends one
+   vision request to Cent AI with your own API key, and inserts the
+   generated markup at your cursor — indentation-matched, undoable with a
+   single `Cmd+Z`.
+4. Not happy with how shallow the first pass is? Run
+   **Paste Screenshot as CSS: Regenerate with More Detail** to re-prompt the
+   same image with an instruction to go further on spacing/shadows/nested
+   elements.
 
-## Try it yourself
+Three output flavors, picked once and remembered: **Tailwind classes**,
+**plain CSS**, or **inline `style=` attributes**.
 
-1. `npm install && npm run compile`
-2. Package it: `npx @vscode/vsce package` (produces a `.vsix`), then in VS Code: Extensions panel → `...` menu → "Install from VSIX...".
-3. Or run it from source without packaging: open this folder in VS Code and press `F5` (launches the real Extension Development Host with this extension loaded).
-4. Open any file, run `Paste Screenshot as CSS: Set Cent AI API Key` once, copy a screenshot to the clipboard, then run `Paste Screenshot as CSS` (`Cmd+Shift+V`).
+Nothing is uploaded anywhere except straight to Cent AI, using your own key.
+The extension has no backend, no telemetry, and keeps no history of your
+screenshots or generated code.
 
-## Setup
+## Install & setup
+
+1. Install the extension (from a packaged `.vsix` — see `TASKS.md` for the
+   Marketplace-publish status).
+2. Run **Paste Screenshot as CSS: Set Cent AI API Key** once (stored in VS
+   Code's `SecretStorage`, never written to `settings.json`).
+3. Copy a screenshot to the clipboard, open a file, press `Cmd+Shift+V`
+   (`Ctrl+Shift+V` on Windows/Linux keybinding, though the extension itself
+   is macOS-only for now — see Limitations).
+4. First run also prompts you to pick an output flavor
+   (**Paste Screenshot as CSS: Set Output Style** to change it later).
 
 ```bash
+# to build/test from source instead of a .vsix:
 npm install
 npm run compile
 npm test
 ```
 
-Copy `.env.example` to `.env` and fill in `LLM_API_KEY` to run `scripts/smoke-test.mjs`
-(compares candidate Cent AI models against a real screenshot; not used by the extension
-itself at runtime — the extension stores its key in VS Code `SecretStorage` via the
-"Paste Screenshot as CSS: Set Cent AI API Key" command).
+## Pricing
 
-## Commands
+Free and fully functional — bring your own Cent AI API key, no gating, no
+license check. If it saves you real time, there's an honor-pricing link to
+pay once (no subscription, no tiers): see `requirements/PRICING_DECISION.md`
+for the reasoning and the concrete number.
 
-- `Paste Screenshot as CSS` (`Cmd+Shift+V` / `Ctrl+Shift+V`) — reads the clipboard image, sends it to Cent AI, inserts the result at the cursor.
-- `Paste Screenshot as CSS: Set Cent AI API Key` — stores your key in SecretStorage.
+Your own Cent AI usage cost is separate and yours — a typical screenshot
+call runs well under a cent at `claude-haiku-5.5` pricing, cheap enough not
+to budget around.
 
-## Model choice
+## Limitations
 
-See `.env.example` for the chosen model and the smoke-test numbers behind it.
+- **macOS only.** Clipboard image reading shells out to `osascript`; no
+  Windows/Linux support yet.
+- Dense screenshots (long lists, big tables, detailed maps) get capped at
+  8-10 representative elements per prompt instruction, rather than
+  enumerating every instance — see `requirements/PROMPT_REFINEMENT.md`.
+- No pixel-perfect guarantee — see `requirements/DEMO.md` for real
+  before/after comparisons and honest SSIM scores against source
+  screenshots (0.59-0.72 across the tested fixtures: structurally faithful,
+  not 1:1 on exact spacing).
+
+## More detail
+
+- `requirements/PRD.md` — original product spec.
+- `requirements/DEMO.md` — real before/after visual-fidelity QA, with the
+  source video the hero GIF above was cut from.
+- `requirements/PROMPT_REFINEMENT.md` — what changed in the vision prompt
+  and why.
+- `requirements/CODE_REVIEW_V1.md` — security/code-review findings.
+- `requirements/PRICING_DECISION.md` — pricing rationale.
+- `TASKS.md` — full build log, including what's still blocked and why.
