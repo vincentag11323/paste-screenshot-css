@@ -1,0 +1,179 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models & Quota</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #1e1e1e;
+    color: #e4e4e4;
+  }
+  body {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 21px;
+    line-height: 28px;
+    padding: 0 0 20px 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .prompt {
+    border-bottom: 1px solid #555;
+    height: 40px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    color: #b57cf0;
+    font-weight: bold;
+  }
+  main {
+    padding: 14px 10px 0 10px;
+  }
+  h1 {
+    font-size: 21px;
+    font-weight: bold;
+    margin: 0 0 30px 0;
+    color: #e4e4e4;
+  }
+  .account {
+    margin: 0 0 40px 28px;
+  }
+  .email {
+    color: #b57cf0;
+  }
+  h2 {
+    font-size: 21px;
+    font-weight: bold;
+    margin: 0;
+    color: #ffffff;
+  }
+  .group-desc {
+    margin: 0 0 26px 28px;
+    color: #8a8a8a;
+  }
+  .limit {
+    margin: 0 0 0 28px;
+  }
+  .limit h3 {
+    font-size: 21px;
+    font-weight: bold;
+    margin: 0;
+    color: #ffffff;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    margin-left: 28px;
+    white-space: pre;
+  }
+  .track {
+    display: inline-block;
+    width: 700px;
+    height: 22px;
+    background: #6cc644;
+    margin: 0 4px;
+  }
+  .pct {
+    color: #a0a0a0;
+  }
+  .status {
+    margin: 0 0 26px 56px;
+    color: #6cc644;
+  }
+  .group {
+    margin-bottom: 40px;
+  }
+  .argon-note {
+    margin: 0 0 30px 28px;
+    color: #8a8a8a;
+    white-space: nowrap;
+  }
+  .info {
+    margin: 42px 0 0 34px;
+    padding-left: 16px;
+    border-left: 2px solid #555;
+    color: #8a8a8a;
+    white-space: pre;
+  }
+  footer {
+    margin: 36px 0 0 28px;
+    color: #a0a0a0;
+    white-space: pre;
+  }
+  .key {
+    color: #b57cf0;
+    font-weight: bold;
+  }
+  .arrows {
+    color: #b57cf0;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+  <div class="prompt">&gt;</div>
+
+  <main>
+    <h1>└ Models &amp; Quota</h1>
+
+    <p class="account">Account: <span class="email">hardwarevibes123@gmail.com</span></p>
+
+    <section class="group">
+      <h2>GEMINI MODELS</h2>
+      <p class="group-desc">Models within this group: Gemini Flash, Gemini Pro</p>
+
+      <div class="limit">
+        <h3>Weekly Limit Remaining</h3>
+      </div>
+      <div class="bar">[<span class="track"></span>] <span class="pct">100.00%</span></div>
+      <p class="status">Quota available</p>
+
+      <div class="limit">
+        <h3>Five Hour Limit Remaining</h3>
+      </div>
+      <div class="bar">[<span class="track"></span>] <span class="pct">100.00%</span></div>
+      <p class="status">Quota available</p>
+    </section>
+
+    <section class="group">
+      <h2>CLAUDE AND GPT MODELS</h2>
+      <p class="group-desc">Models within this group: Claude Opus, Claude Sonnet, GPT-OSS</p>
+
+      <div class="limit">
+        <h3>Weekly Limit Remaining</h3>
+      </div>
+      <div class="bar">[<span class="track"></span>] <span class="pct">100.00%</span></div>
+      <p class="status">Quota available</p>
+
+      <div class="limit">
+        <h3>Five Hour Limit Remaining</h3>
+      </div>
+      <div class="bar">[<span class="track"></span>] <span class="pct">100.00%</span></div>
+      <p class="status">Quota available</p>
+    </section>
+
+    <section class="group">
+      <h2>GEMINI 4 ARGON</h2>
+      <p class="argon-note">For paid Pro plans, Argon quota is separate. Higher Argon quota (included as part of the larger Gemini quota bucket) is available on Ultra plans.</p>
+
+      <div class="limit">
+        <h3>Gemini 4 Argon Weekly Limit</h3>
+      </div>
+      <div class="bar">[<span class="track"></span>] <span class="pct">100.00%</span></div>
+      <p class="status">Quota available</p>
+    </section>
+
+    <blockquote class="info">Within each group, models share a weekly limit and a 5-hour limit. Quota is
+consumed proportionally to the cost of the tokens. Thus, limits will last
+longer with shorter tasks or using more cost-effective models. The 5-hour
+limit smooths out aggregate demand to fairly distribute global capacity
+across all users, while your weekly limit is tied directly to your individual
+tier.</blockquote>
+
+    <footer>
+<span class="arrows">↑/↓</span> Scroll · <span class="key">pgup/pgdown</span> Page · <span class="key">ctrl+end</span> Bottom · <span class="key">ctrl+home</span> Top · <span class="key">esc</span> Close
+    </footer>
+  </main>
+</body>
+</html></body></html>
