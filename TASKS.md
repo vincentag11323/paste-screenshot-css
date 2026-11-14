@@ -6,10 +6,10 @@ created: 2026-11-14
 # Project Tasks — Paste Screenshot as CSS
 
 Task list for `paste-screenshot-css`, following the tagging convention from
-`youtube_reviewer/requirements/TASKS.md`. This pass covers PRD Build Plan Day 1-3
-only (scaffold, clipboard read, vision call, insert-at-cursor) — Day 4-7
-(output flavors, error-path polish, prompt refinement, packaging, launch) are
-tracked but not started.
+`youtube_reviewer/requirements/TASKS.md`. Day 1-3 (scaffold, clipboard read,
+vision call, insert-at-cursor) and most of Day 4-5 (output flavors, retry UX,
+prompt refinement, real QA, a code review pass) are done. Day 6-7 (packaging,
+Marketplace listing, launch prep) are tracked but not started.
 
 ## Tag convention
 
@@ -51,13 +51,21 @@ tracked but not started.
 
 - [x] **FE-01:** `src/extension.ts` — `insertAtCursor()` reads the cursor line's leading whitespace and prefixes every inserted line after the first, inserted via the standard `TextEditor.edit()` API (undoable with one Cmd+Z, no custom diff view).
 - [x] **FE-02:** Status-bar spinner during the API call via `vscode.window.withProgress({ location: ProgressLocation.Window, cancellable: true })` — reuses the built-in VS Code feature instead of a custom `StatusBarItem`; cancellation rejects the in-flight call.
-- [ ] **E2E-03:** Full flow driven through the actual VS Code Extension Development Host (press the real keybinding, watch the real insertion). **Not done this pass** — no VS Code GUI driver available in this build environment; verified instead at the module level (real clipboard test, real API smoke test, clean `tsc` compile against `@types/vscode`). Flagged as the one open risk before calling Day 1-3 fully closed.
+- [x] **E2E-03:** Full flow driven through the actual VS Code Extension Development Host. **Done, then retired:** `@vscode/test-electron` was installed and it genuinely worked — real activation, real macOS clipboard image, real Cent AI call, real text inserted into a real open document, asserted in a real Mocha run inside a real Extension Host (two independent runs, ~9.3s each, both passing). It also caught a real bug (**FIX-01** below) that no module-level check could have found. The approach was then **deliberately removed mid-session at the user's explicit request** — it was popping visible Electron/VS Code windows on their physical laptop and disrupting them — not because it was infeasible. Replaced by module-level verification only from here on (see **E2E-05**, plus the existing real clipboard/vision tests and `scripts/qaFullFlow.mjs`).
 
-## Not started (Day 4-7, out of scope for this pass)
+## Phase 4 — Day 4-5: Output flavors, retry UX, prompt refinement, real QA
 
-- [ ] **FE-03 (Day 4):** 3-way output flavor setting (Tailwind/JSX, Tailwind/HTML, plain CSS/HTML) + quick-pick, remembered after first use.
-- [ ] **T-03 (Day 4):** Error-path polish — Retry button on API error/timeout, explicit no-API-key and no-clipboard-image UX pass beyond the current plain error messages.
-- [ ] **T-04 (Day 5):** Prompt refinement pass against 8-10 varied fixture screenshots (buttons, cards, nav bars, forms, landing page section).
+- [x] **FE-03:** Output-flavor quick-pick (Tailwind classes / plain CSS / inline style attributes) — one shared system-prompt template with a per-flavor instruction slot (`src/vision.ts`'s `buildSystemPrompt`), not three separate prompts/code paths. Quick-pick on first run, remembered in `globalState`; `pasteScreenshotAsCss.setOutputFlavor` command to change it later. Commit `9c5fef2`.
+- [x] **T-03:** Retry-on-failure UX — API/network failure now shows a `'Retry'` action instead of a dead end; clicking it re-runs the command once. No silent automatic retries. Commit `9c5fef2`.
+- [x] **E2E-04:** Added 4 real screenshot fixtures (`test/fixtures/real-screenshots/`) alongside the original `shot.png`, for prompt-refinement and QA use. Commit `0bccc17`.
+- [x] **T-04:** Prompt refinement pass + `scripts/qaFullFlow.mjs` — ran the real pipeline against all 5 real fixtures, found and fixed a real truncation bug (`max_tokens` cap too low on dense screenshots, confirmed via the API's own `stop_reason: "max_tokens"`), added a prompt instruction capping dense repeated-element enumeration. Before/after detail: `requirements/PROMPT_REFINEMENT.md`. Full before/after suite: 2/5 → 5/5. Commits `efe7b6c`, `b83ff94`.
+- [x] **FIX-01:** `package.json`'s `main` pointed at `./out/extension.js`, a path `tsc` never produces (real output is `./out/src/extension.js` given `rootDir: '.'`) — real VS Code would have failed to activate the extension. Found by actually loading the extension in a real VS Code instance (see E2E-03/E2E-05). Commit `02c8c94`.
+- [x] **E2E-05:** Extracted `insertAtCursor`'s indentation math into a `vscode`-free module (`src/indent.ts`) and unit-tested it directly — module-level coverage for the one pipeline piece that otherwise needs a real `vscode.TextEditor`, now that E2E-03's Electron-based test is retired. Commit `446732c`.
+- [x] **SEC-02:** `security-review` pass on SecretStorage API-key handling and the Cent AI network call — found and fixed one real issue (unbounded upstream error body going straight into a UI toast, capped at 300 chars); everything else (key handling, `.env` hygiene, image-data-as-base64 injection risk) checked out clean. Also an `antislop-code` pass (one over-explained comment trimmed) and a flag on the real-screenshot fixtures' privacy exposure if this repo ever goes public. Full findings: `requirements/CODE_REVIEW_V1.md`. Commit `6448c58`.
+- [x] **SEC-03:** Ran `npx @vscode/vsce package` for real (not just read as theoretical) to verify the packaging instructions — with no `.vscodeignore`, it was about to bundle the real `.env` key plus the full `test/` fixtures/`scripts/`/`requirements/`/`src/` into the `.vsix`; `vsce`'s own guard caught `.env` specifically but nothing else. Added `.vscodeignore`; re-ran for real — clean 8.95 KB `.vsix`, verified by reading its actual file listing. Commit `0090755`.
+
+## Not started (Day 6-7, out of scope for this pass)
+
 - [ ] **T-05 (Day 5):** "Regenerate with more detail" secondary command.
 - [ ] **T-06 (Day 6):** Marketplace README polish (hero GIF), icon, `vsce package`/`vsce publish`.
 - [ ] **T-07 (Day 6):** Pricing/licensing decision (PRD §7 recommends honor-pricing via Gumroad link — no gating code).
