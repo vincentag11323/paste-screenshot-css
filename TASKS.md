@@ -66,9 +66,20 @@ Marketplace listing, launch prep) are tracked but not started.
 
 - [x] **E2E-06:** Real visual-fidelity QA (`scripts/demoGen.mjs` + `requirements/DEMO.md`) — 3 of 5 fixtures x 2 flavors (css, tailwind), real Cent AI calls, rendered headlessly via Chrome `--headless=new`, compared against source via `ffmpeg ssim` + side-by-side images, stitched into `requirements/demo/demo-5-paste-screenshot.mp4`. No VS Code/Electron window launched. Closes the "needs a human/vision pass" gap noted in `qaFullFlow.mjs`/`CODE_REVIEW_V1.md`. Verdict: real-01/real-03 (CLI dashboard) read as faithful at a glance (SSIM 0.66-0.72); real-05-shot (Wikipedia page) is structurally correct but the weakest visual match (SSIM 0.59-0.60).
 
-## Not started (Day 6-7, out of scope for this pass)
+## Phase 5 — Day 6-7: packaging, pricing, launch prep (credential-free portion)
 
-- [ ] **T-05 (Day 5):** "Regenerate with more detail" secondary command.
-- [ ] **T-06 (Day 6):** Marketplace README polish (hero GIF), icon, `vsce package`/`vsce publish`.
-- [ ] **T-07 (Day 6):** Pricing/licensing decision (PRD §7 recommends honor-pricing via Gumroad link — no gating code).
-- [ ] **T-08 (Day 7):** Product Hunt / Twitter / subreddit launch prep.
+- [x] **T-05:** "Regenerate with more detail" secondary command — `pasteScreenshotAsCss.regenerateMoreDetail`, reuses the existing `run()`/retry-UX pattern with a `moreDetail` flag threaded into `buildSystemPrompt()` (one extra instruction appended, not a second prompt). One unit test on the prompt-building logic (`test/vision.test.ts`). Commit `9f551fc`.
+- [~] **T-06 (partial — real completion state below):**
+  - [x] Extracted 3 frames from the existing `requirements/demo/demo-5-paste-screenshot.mp4` via `ffmpeg` into a looping hero GIF: `requirements/demo/hero.gif` (720x270, 80 KB, 1.5s/frame, `-loop 0`).
+  - [x] 128x128 icon generated via a one-shot `ffmpeg drawtext` command (dark background, cyan `</>` glyph + "PNG" label) — `icon.png` at repo root, wired into `package.json`'s `icon` field.
+  - [x] README.md rewritten to Marketplace-listing quality: hero GIF embedded above the fold, what-it-does, install/setup, commands, pricing, limitations, links to the other requirements docs.
+  - [x] Ran `npx @vscode/vsce package` for real — **required `--no-rewrite-relative-links`** to succeed: with no git remote, vsce can't rewrite the README's relative `requirements/demo/hero.gif` link to an absolute URL, and refuses to package by default (treats it as a Marketplace-page-breaking error, not just a warning). Real output: clean 13.75 KB `.vsix`, 9 files, verified by reading its actual file listing (`icon.png`, `readme.md`, compiled `out/src/*.js`). **Known real limitation, not faked:** the hero GIF will render in this README locally/on GitHub but would 404 on an actual Marketplace listing page until this repo has a real git remote (or `--baseImagesUrl` is set at publish time) — document, don't silently "fix" with a fake repo URL.
+  - [ ] **`vsce publish` — blocked.** No VS Code Marketplace publisher account exists in this environment; not attempted, not faked.
+- [x] **T-07:** `requirements/PRICING_DECISION.md` — recommends sticking with the PRD's **$12 one-time, honor-pricing via Gumroad, no gating code** (PRD §7's own v1 recommendation — costs zero extra build, consistent with "no backend" thesis). Anchored against two real comparables found via web search: **Pixel — Vision to Code** (Chrome, BYOK screenshot-to-code, $14.99 one-time) and **Spec Coder** (VS Code, BYOK, $9.99 one-time via Gumroad) — $12 sits inside that real $9.99-$14.99 band, not picked from nothing. **The Gumroad link itself does not exist** — no Gumroad account in this environment; README/launch copy reference it as `<gumroad-link-tbd>`, not a working URL.
+- [x] **T-08:** `requirements/LAUNCH_COPY.md` — Product Hunt tagline + description + first comment, a 4-tweet X thread draft, an r/vscode post draft. **Drafts only — nothing posted.** No social accounts were touched.
+
+## Not started / explicitly blocked (credentials that don't exist in this environment)
+
+- [ ] **`vsce publish`** — needs a VS Code Marketplace publisher account. Not created, not attempted.
+- [ ] **Gumroad product page** — needs a Gumroad account. Not created; pricing decision and number are ready (`requirements/PRICING_DECISION.md`), the actual listing is a ~10-minute manual task for whoever holds payment credentials.
+- [ ] **Posting `LAUNCH_COPY.md`** to Product Hunt/Twitter/Reddit — needs those accounts; copy is drafted and ready, nothing has been posted.
