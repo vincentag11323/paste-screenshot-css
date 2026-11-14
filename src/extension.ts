@@ -1,17 +1,41 @@
 import * as vscode from 'vscode';
 import { readClipboardImageMac } from './clipboard';
-import { callVisionApi } from './vision';
+import { callVisionApi, OutputFlavor } from './vision';
 
 const CENT_AI_BASE_URL = 'https://api.cent-ai.dev/v1';
 // claude-haiku-5.5 chosen after smoke-testing 3 candidates against a real screenshot — see .env comment for numbers.
 const MODEL = 'claude-haiku-5.5';
 const SECRET_KEY = 'pasteScreenshotAsCss.centAiApiKey';
+const FLAVOR_KEY = 'pasteScreenshotAsCss.outputFlavor';
+
+const FLAVOR_PICKS: { label: string; flavor: OutputFlavor }[] = [
+  { label: 'Tailwind classes', flavor: 'tailwind' },
+  { label: 'Plain CSS', flavor: 'css' },
+  { label: 'Inline style attributes', flavor: 'inline' },
+];
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('pasteScreenshotAsCss.setApiKey', () => setApiKey(context)),
+    vscode.commands.registerCommand('pasteScreenshotAsCss.setOutputFlavor', () => pickOutputFlavor(context)),
     vscode.commands.registerCommand('pasteScreenshotAsCss.run', () => run(context)),
   );
+}
+
+async function pickOutputFlavor(context: vscode.ExtensionContext): Promise<OutputFlavor | undefined> {
+  const choice = await vscode.window.showQuickPick(FLAVOR_PICKS, {
+    placeHolder: 'Output style for generated code',
+  });
+  if (!choice) {
+    return undefined;
+  }
+  await context.globalState.update(FLAVOR_KEY, choice.flavor);
+  return choice.flavor;
+}
+
+async function getOutputFlavor(context: vscode.ExtensionContext): Promise<OutputFlavor | undefined> {
+  const stored = context.globalState.get<OutputFlavor>(FLAVOR_KEY);
+  return stored ?? pickOutputFlavor(context);
 }
 
 async function setApiKey(context: vscode.ExtensionContext): Promise<void> {
@@ -52,6 +76,11 @@ async function run(context: vscode.ExtensionContext): Promise<void> {
     }
   }
 
+  const flavor = await getOutputFlavor(context);
+  if (!flavor) {
+    return;
+  }
+
   let imageBuffer: Buffer;
   try {
     imageBuffer = await readClipboardImageMac();
@@ -65,7 +94,7 @@ async function run(context: vscode.ExtensionContext): Promise<void> {
       { location: vscode.ProgressLocation.Window, title: 'Generating UI from screenshot…', cancellable: true },
       (_progress, token) =>
         Promise.race([
-          callVisionApi({ apiKey: apiKey!, baseUrl: CENT_AI_BASE_URL, model: MODEL, imageBase64: imageBuffer.toString('base64') }),
+          callVisionApi({ apiKey: apiKey!, baseUrl: CENT_AI_BASE_URL, model: MODEL, flavor, imageBase64: imageBuffer.toString('base64') }),
           new Promise<string>((_resolve, reject) => {
             token.onCancellationRequested(() => reject(new Error('Cancelled')));
           }),
@@ -79,8 +108,15 @@ async function run(context: vscode.ExtensionContext): Promise<void> {
 
     await insertAtCursor(editor, code);
   } catch (err) {
-    if ((err as Error).message !== 'Cancelled') {
-      vscode.window.showErrorMessage(`Paste Screenshot as CSS failed: ${(err as Error).message}`);
+    if ((err as Error).message === 'Cancelled') {
+      return;
+    }
+    const choice = await vscode.window.showErrorMessage(
+      `Paste Screenshot as CSS failed: ${(err as Error).message}`,
+      'Retry',
+    );
+    if (choice === 'Retry') {
+      await run(context);
     }
   }
 }

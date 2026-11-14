@@ -19,6 +19,10 @@
       {
         "command": "pasteScreenshotAsCss.setApiKey",
         "title": "Paste Screenshot as CSS: Set Cent AI API Key"
+      },
+      {
+        "command": "pasteScreenshotAsCss.setOutputFlavor",
+        "title": "Paste Screenshot as CSS: Set Output Style"
       }
     ],
     "keybindings": [
