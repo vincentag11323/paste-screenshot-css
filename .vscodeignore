@@ -1,0 +1,16 @@
+.env
+.env.example
+.gitignore
+.vscodeignore
+.qa-output-*.html
+.smoke-output-*.html
+tsconfig.json
+out/test/**
+src/**
+test/**
+scripts/**
+requirements/**
+TASKS.md
+package-lock.json
+**/*.map
+**/.DS_Store

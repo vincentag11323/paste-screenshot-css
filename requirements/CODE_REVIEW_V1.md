@@ -69,6 +69,24 @@ that don't reveal account-specific info, or gitignore them and keep them
 local-only before this repo goes anywhere public (e.g., before Marketplace
 publishing work in the PRD's Day 6).
 
+### 4. Packaging would have shipped the real `.env` secret (found, fixed — critical)
+
+Ran `npx @vscode/vsce package` for real to verify the "try it yourself"
+packaging path in the main report. With no `.vscodeignore` in the repo, `vsce`
+listed `.env` — **the real, live Cent AI key** — as a file it was about to
+bundle directly into the `.vsix`, along with the entire `test/` fixtures
+directory (2.6 MB of real personal screenshots), `scripts/`, `requirements/`,
+and uncompiled `src/`. `vsce` itself refused to proceed (`ERROR: .env files
+should not be packaged`) — its own built-in guard caught this before any file
+left the machine, but that guard only exists for `.env` specifically; nothing
+would have stopped `requirements/`, `test/`, or the TypeScript sources from
+shipping to every installer. **Fix:** added `.vscodeignore` excluding `.env`,
+`.env.example`, `test/**`, `src/**`, `scripts/**`, `requirements/**`,
+`TASKS.md`, map files, and compiled test output. Re-ran `vsce package`:
+clean 8.95 KB `.vsix` containing only `package.json`, `README.md`, and the 4
+compiled `out/src/*.js` files — verified by reading the package's own file
+listing, not assumed from the config.
+
 ## Antislop-code pass (comment hygiene)
 
 Read every comment in `src/*.ts`, `scripts/*.mjs`, `test/*.ts`. Verdict: the
@@ -93,6 +111,7 @@ fact being conveyed.
    it's thrown/surfaced to the user.
 2. `src/vision.ts` — trimmed the over-explained `max_tokens` comment block to
    one line.
+3. `.vscodeignore` (new) — stops `.env` (a real secret), `test/` fixtures, and
+   all dev-only files from ever landing in a packaged `.vsix`.
 
-Both are included in this review's own commit (see `TASKS.md`'s `[SEC-02]`
-entry for the exact commit).
+Included in this review's own commit (see `TASKS.md`'s `[SEC-02]` entry).
