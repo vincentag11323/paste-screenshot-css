@@ -20,6 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('pasteScreenshotAsCss.setApiKey', () => setApiKey(context)),
     vscode.commands.registerCommand('pasteScreenshotAsCss.setOutputFlavor', () => pickOutputFlavor(context)),
     vscode.commands.registerCommand('pasteScreenshotAsCss.run', () => run(context)),
+    vscode.commands.registerCommand('pasteScreenshotAsCss.regenerateMoreDetail', () => run(context, true)),
   );
 }
 
@@ -51,7 +52,7 @@ async function setApiKey(context: vscode.ExtensionContext): Promise<void> {
   }
 }
 
-async function run(context: vscode.ExtensionContext): Promise<void> {
+async function run(context: vscode.ExtensionContext, moreDetail = false): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showErrorMessage('Open a file first — nowhere to insert the generated code.');
@@ -95,7 +96,7 @@ async function run(context: vscode.ExtensionContext): Promise<void> {
       { location: vscode.ProgressLocation.Window, title: 'Generating UI from screenshot…', cancellable: true },
       (_progress, token) =>
         Promise.race([
-          callVisionApi({ apiKey: apiKey!, baseUrl: CENT_AI_BASE_URL, model: MODEL, flavor, imageBase64: imageBuffer.toString('base64') }),
+          callVisionApi({ apiKey: apiKey!, baseUrl: CENT_AI_BASE_URL, model: MODEL, flavor, imageBase64: imageBuffer.toString('base64'), moreDetail }),
           new Promise<string>((_resolve, reject) => {
             token.onCancellationRequested(() => reject(new Error('Cancelled')));
           }),
@@ -117,7 +118,7 @@ async function run(context: vscode.ExtensionContext): Promise<void> {
       'Retry',
     );
     if (choice === 'Retry') {
-      await run(context);
+      await run(context, moreDetail);
     }
   }
 }

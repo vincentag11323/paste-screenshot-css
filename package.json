@@ -25,6 +25,10 @@
       {
         "command": "pasteScreenshotAsCss.setOutputFlavor",
         "title": "Paste Screenshot as CSS: Set Output Style"
+      },
+      {
+        "command": "pasteScreenshotAsCss.regenerateMoreDetail",
+        "title": "Paste Screenshot as CSS: Regenerate with More Detail"
       }
     ],
     "keybindings": [

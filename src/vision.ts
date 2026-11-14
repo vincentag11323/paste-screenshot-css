@@ -7,7 +7,13 @@ const FLAVOR_INSTRUCTIONS: Record<OutputFlavor, string> = {
   inline: 'Style every element using inline style="..." attributes only. Do not output a <style> block and do not use Tailwind classes.',
 };
 
-function buildSystemPrompt(flavor: OutputFlavor): string {
+const MORE_DETAIL_INSTRUCTION = `
+This is a regeneration pass: the first attempt was too shallow. Go further this
+time — infer finer-grained spacing, shadows, borders, hover/focus-looking states,
+and nested sub-elements you may have skipped before, while still obeying the
+dense-element cap above.`;
+
+export function buildSystemPrompt(flavor: OutputFlavor, moreDetail = false): string {
   return `You convert UI screenshots into code. Reproduce the screenshot as a single
 self-contained HTML snippet. ${FLAVOR_INSTRUCTIONS[flavor]}
 IMPORTANT: if the screenshot contains many repeated small elements (a long list of labels,
@@ -18,7 +24,7 @@ incomplete.
 Infer spacing, colors, and font sizes as best you can. Use semantic HTML tags.
 Output ONLY the code, with no markdown code fences anywhere in the response.
 If the image clearly isn't a UI screenshot (e.g. a photo), respond with exactly:
-NOT_A_UI_SCREENSHOT`;
+NOT_A_UI_SCREENSHOT${moreDetail ? MORE_DETAIL_INSTRUCTION : ''}`;
 }
 
 export interface VisionCallOptions {
@@ -28,6 +34,8 @@ export interface VisionCallOptions {
   imageBase64: string;
   flavor: OutputFlavor;
   mediaType?: string;
+  /** "Regenerate with more detail" — appends an extra instruction to the same prompt. */
+  moreDetail?: boolean;
 }
 
 /** Calls Cent AI's Anthropic-Messages-shape endpoint with a vision content block. */
@@ -43,7 +51,7 @@ export async function callVisionApi(opts: VisionCallOptions): Promise<string> {
       model: opts.model,
       max_tokens: 6144, // raised from 2048 — see requirements/PROMPT_REFINEMENT.md
       // shortcut: fixed cap, not adaptive/retried — raise again if a denser screenshot truncates.
-      system: buildSystemPrompt(opts.flavor),
+      system: buildSystemPrompt(opts.flavor, opts.moreDetail),
       messages: [
         {
           role: 'user',
