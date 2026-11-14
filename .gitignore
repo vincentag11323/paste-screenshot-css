@@ -1,0 +1,7 @@
+node_modules/
+out/
+*.vsix
+.env
+dotenv_assembled.tmp
+.smoke-output-*.html
+.DS_Store

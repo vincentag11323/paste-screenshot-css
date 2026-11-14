@@ -1,0 +1,44 @@
+{
+  "name": "paste-screenshot-css",
+  "displayName": "Paste Screenshot as CSS",
+  "description": "Paste a clipboard screenshot, get HTML/CSS back at your cursor. macOS only for now.",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pasteScreenshotAsCss.run",
+        "title": "Paste Screenshot as CSS"
+      },
+      {
+        "command": "pasteScreenshotAsCss.setApiKey",
+        "title": "Paste Screenshot as CSS: Set Cent AI API Key"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pasteScreenshotAsCss.run",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "pretest": "npm run compile",
+    "test": "node --test out/test/*.test.js",
+    "smoke-test": "node --env-file=.env scripts/smoke-test.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.6.0"
+  }
+}
