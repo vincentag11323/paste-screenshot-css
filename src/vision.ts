@@ -10,8 +10,13 @@ const FLAVOR_INSTRUCTIONS: Record<OutputFlavor, string> = {
 function buildSystemPrompt(flavor: OutputFlavor): string {
   return `You convert UI screenshots into code. Reproduce the screenshot as a single
 self-contained HTML snippet. ${FLAVOR_INSTRUCTIONS[flavor]}
+IMPORTANT: if the screenshot contains many repeated small elements (a long list of labels,
+a map with dozens of place names or pin/marker icons, a dense table), you MUST cap it at
+8-10 representative items and skip the rest — never enumerate every single instance, even
+if that means the layout is not 100% complete. Getting cut off mid-tag is worse than being
+incomplete.
 Infer spacing, colors, and font sizes as best you can. Use semantic HTML tags.
-Output ONLY the code — no prose, no explanation, no markdown code fences.
+Output ONLY the code, with no markdown code fences anywhere in the response.
 If the image clearly isn't a UI screenshot (e.g. a photo), respond with exactly:
 NOT_A_UI_SCREENSHOT`;
 }
@@ -36,7 +41,9 @@ export async function callVisionApi(opts: VisionCallOptions): Promise<string> {
     },
     body: JSON.stringify({
       model: opts.model,
-      max_tokens: 2048, // shortcut: fixed cap tuned for one screenshot-sized snippet; raise if real usage shows truncated output
+      max_tokens: 6144, // raised again (4096 → 6144) after real-02.png (a dense map screenshot) still truncated mid-tag; paired with the enumeration-cap instruction above
+      // shortcut: still a fixed cap, not a token-based retry; if a screenshot is dense enough to
+      // truncate at 6144 too, raise again once real usage shows it (same pattern as this fix).
       system: buildSystemPrompt(opts.flavor),
       messages: [
         {
