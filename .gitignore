@@ -4,4 +4,5 @@ out/
 .env
 dotenv_assembled.tmp
 .smoke-output-*.html
+.qa-output-*.html
 .DS_Store
