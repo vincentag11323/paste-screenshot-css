@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { readClipboardImageMac } from './clipboard';
 import { callVisionApi, OutputFlavor } from './vision';
+import { indentContinuationLines } from './indent';
 
 const CENT_AI_BASE_URL = 'https://api.cent-ai.dev/v1';
 // claude-haiku-5.5 chosen after smoke-testing 3 candidates against a real screenshot — see .env comment for numbers.
@@ -125,9 +126,6 @@ async function insertAtCursor(editor: vscode.TextEditor, code: string): Promise<
   const position = editor.selection.active;
   const currentLine = editor.document.lineAt(position.line).text;
   const indent = currentLine.match(/^\s*/)?.[0] ?? '';
-  const indented = code
-    .split('\n')
-    .map((line, i) => (i === 0 ? line : indent + line))
-    .join('\n');
+  const indented = indentContinuationLines(code, indent);
   await editor.edit((editBuilder) => editBuilder.insert(position, indented));
 }
