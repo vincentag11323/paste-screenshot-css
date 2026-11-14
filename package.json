@@ -38,7 +38,8 @@
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
     "test": "node --test out/test/*.test.js",
-    "smoke-test": "node --env-file=.env scripts/smoke-test.mjs"
+    "smoke-test": "node --env-file=.env scripts/smoke-test.mjs",
+    "qa": "npm run compile && node --env-file=.env scripts/qaFullFlow.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
