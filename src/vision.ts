@@ -41,9 +41,8 @@ export async function callVisionApi(opts: VisionCallOptions): Promise<string> {
     },
     body: JSON.stringify({
       model: opts.model,
-      max_tokens: 6144, // raised again (4096 → 6144) after real-02.png (a dense map screenshot) still truncated mid-tag; paired with the enumeration-cap instruction above
-      // shortcut: still a fixed cap, not a token-based retry; if a screenshot is dense enough to
-      // truncate at 6144 too, raise again once real usage shows it (same pattern as this fix).
+      max_tokens: 6144, // raised from 2048 — see requirements/PROMPT_REFINEMENT.md
+      // shortcut: fixed cap, not adaptive/retried — raise again if a denser screenshot truncates.
       system: buildSystemPrompt(opts.flavor),
       messages: [
         {
@@ -61,7 +60,11 @@ export async function callVisionApi(opts: VisionCallOptions): Promise<string> {
   });
 
   if (!res.ok) {
-    throw new Error(`Cent AI request failed: ${res.status} ${await res.text()}`);
+    // Cap the upstream body: Cent AI's own error text is safe to show (it's the
+    // user's own provider, not us), but an unbounded or unexpectedly verbose
+    // response shouldn't be allowed to dump an oversized blob into a UI toast.
+    const body = (await res.text()).slice(0, 300);
+    throw new Error(`Cent AI request failed: ${res.status} ${body}`);
   }
 
   const json: any = await res.json();
