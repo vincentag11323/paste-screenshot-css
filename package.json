@@ -5,6 +5,10 @@
   "version": "0.1.0",
   "private": true,
   "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vincentag11323/paste-screenshot-css.git"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
